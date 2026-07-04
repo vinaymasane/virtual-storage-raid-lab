@@ -53,9 +53,7 @@ cd virtual-storage-raid-lab
 
 chmod +x bootstrap/*.sh
 
-sudo ./bootstrap/install_prereqs.sh
-
-sudo ./bootstrap/configure_kvm.sh
+sudo ./bootstrap/preinstall_host.sh
 
 ./bootstrap/validate_host.sh
 ```
