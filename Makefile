@@ -20,6 +20,8 @@ launch:
 configure:
 	sudo ./bin/raidlab configure
 
+test:
+	go test ./test/... -v
 
 full:
 	make bootstrap
@@ -29,3 +31,4 @@ full:
 	make raid
 	make launch
 	make configure
+	make test
