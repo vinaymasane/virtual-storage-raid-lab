@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 
+### Set error handling options
 set -Eeuo pipefail
 
+### Export environment variables for non-interactive APT operations and PATH
 export DEBIAN_FRONTEND=noninteractive
 export DEBCONF_NONINTERACTIVE_SEEN=true
 export PATH=$PATH:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/go/bin
