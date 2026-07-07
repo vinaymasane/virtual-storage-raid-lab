@@ -151,7 +151,12 @@ BASE_PKGS=(
 VIRT_PKGS=(
     qemu-utils
     qemu-system-x86
-    kpartx
+    qemu-kvm
+    libvirt-daemon-system
+    libvirt-clients
+    virtinst
+    virt-manager
+    dnsmasq-base
     libguestfs-tools
     bridge-utils
 )
@@ -162,25 +167,35 @@ STORAGE_PKGS=(
     parted
     fdisk
     e2fsprogs
+    kpartx
 )
 
-CONFIG_PKGS=(
+AUTOMATION_PKGS=(
     ansible
-)
-
-SUPPORT_PKGS=(
-    fio
-    sysstat
-    smartmontools
-    rsync
     python3
     python3-pip
     python3-venv
-    sshpass
-    ncdu
+)
+
+GO_DEV_PKGS=(
+    gcc
+    g++
+    make
+)
+
+TEST_PKGS=(
+    fio
+    sysstat
+    smartmontools
     lsof
     psmisc
     netcat-openbsd
+)
+
+SUPPORT_PKGS=(
+    rsync
+    sshpass
+    ncdu
 )
 
 ### Install all required packages
@@ -189,7 +204,9 @@ for pkg in \
     "${VIRT_PKGS[@]}" \
     "${STORAGE_PKGS[@]}" \
     "${CONFIG_PKGS[@]}" \
-    "${SUPPORT_PKGS[@]}"
+    "${SUPPORT_PKGS[@]}" \
+    "${GO_DEV_PKGS[@]}" \
+    "${TEST_PKGS[@]}"
 do
     install_or_upgrade_apt_pkg "${pkg}"
 done
