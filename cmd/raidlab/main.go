@@ -2,40 +2,65 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 
-	"virtual-storage-raid-lab/internal/image"
-	"virtual-storage-raid-lab/internal/storage"
-	"virtual-storage-raid-lab/internal/vm"
-	"virtual-storage-raid-lab/internal/config"
+	"github.com/vinaymasane/virtual-storage-raid-lab/internal/ansible"
+	"github.com/vinaymasane/virtual-storage-raid-lab/internal/image"
+	"github.com/vinaymasane/virtual-storage-raid-lab/internal/storage"
+	"github.com/vinaymasane/virtual-storage-raid-lab/internal/verify"
+	"github.com/vinaymasane/virtual-storage-raid-lab/internal/vm"
 )
+
+func usage() {
+	fmt.Println("raidlab")
+	fmt.Println("")
+	fmt.Println("Commands:")
+	fmt.Println("  build")
+	fmt.Println("  mirror")
+	fmt.Println("  raid")
+	fmt.Println("  launch")
+	fmt.Println("  configure")
+	fmt.Println("  verify")
+}
 
 func main() {
 
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
+
 	if len(os.Args) < 2 {
-		fmt.Println("usage: raidlab <build|mirror|raid|launch|configure|validate>")
-		return
+		usage()
+		os.Exit(1)
 	}
+
+	var err error
 
 	switch os.Args[1] {
 
 	case "build":
-		image.BuildWithPacker()
+		err = image.BuildWithPacker()
 
 	case "mirror":
-		image.CreateMirror()
+		err = storage.CreateMirror()
 
 	case "raid":
-		storage.CreateRAID()
+		err = storage.CreateRaid()
 
 	case "launch":
-		vm.StartVM()
+		err = vm.LaunchVM()
 
 	case "configure":
-		config.RunAnsible()
+		err = ansible.Run()
 
+	case "verify":
+		err = verify.Run()
 
 	default:
-		fmt.Println("unknown command")
+		usage()
+		os.Exit(1)
+	}
+
+	if err != nil {
+		log.Fatal(err)
 	}
 }

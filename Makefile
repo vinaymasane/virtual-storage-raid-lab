@@ -1,34 +1,51 @@
-build:
-	go build -o bin/raidlab cmd/raidlab/main.go
+APP=raidlab
+
+BIN=bin/$(APP)
+
+GO=go
+
+all: build
 
 bootstrap:
-	sudo bash bootstrap/preinstall_host.sh
-	bash bootstrap/validate_host.sh
+	sudo ./bootstrap/preinstall_host.sh
+
+build:
+	mkdir -p bin
+	$(GO) mod tidy
+	$(GO) build -o $(BIN) ./cmd/raidlab
 
 image:
-	./bin/raidlab build
+	$(BIN) build
 
 mirror:
-	./bin/raidlab mirror
+	sudo $(BIN) mirror
 
 raid:
-	sudo ./bin/raidlab raid
+	sudo $(BIN) raid
 
 launch:
-	sudo ./bin/raidlab launch
+	sudo $(BIN) launch
 
 configure:
-	sudo ./bin/raidlab configure
+	sudo $(BIN) configure
+
+verify:
+	sudo $(BIN) verify
+
+collect:
+	sudo ./bootstrap/collect_host.sh
+
+clean:
+	sudo ./bootstrap/cleanup_host.sh
+	rm -rf bin output artifacts
+
+fmt:
+	go fmt ./...
 
 test:
-	go test ./test/... -v
+	go test ./... -v
 
-full:
-	make bootstrap
-	make build
-	make image
-	make mirror
-	make raid
-	make launch
-	make configure
-	make test
+lint:
+	go vet ./...
+
+.PHONY: all bootstrap build image mirror raid launch configure verify collect clean
