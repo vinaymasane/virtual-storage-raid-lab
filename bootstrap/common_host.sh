@@ -14,21 +14,25 @@ REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 export SCRIPT_DIR
 export REPO_ROOT
 
+LOG_DIR="${REPO_ROOT}/artifacts/logs"
+mkdir -p "${LOG_DIR}"
 
-### Logging
-LOG_PREFIX="[RAIDLAB]"
+LOGFILE="${LOG_DIR}/bootstrap.log"
 
-info() {
-    echo "${LOG_PREFIX} $*"
-}
+exec > >(tee -a "${LOGFILE}") 2>&1
 
-warn() {
-    echo "${LOG_PREFIX} WARNING: $*"
-}
+info(){ echo "[INFO ] $*"; }
+warn(){ echo "[WARN ] $*" >&2; }
+error(){ echo "[ERROR] $*" >&2; }
 
-fail() {
-    echo "${LOG_PREFIX} ERROR: $*"
+die(){
+    error "$*"
     exit 1
+}
+
+run(){
+    info "$*"
+    "$@"
 }
 
 ### Function to check if a binary exists in the system
@@ -37,22 +41,27 @@ binary_exists() {
     command -v "$1" >/dev/null 2>&1
 }
 
+### Function to check if a package is installed
+pkg_installed(){
+    dpkg -s "$1" >/dev/null 2>&1
+}
+
 ### Function to ensure a service is running
 ensure_service_running() {
 
     local service="$1"
 
     info "Enabling ${service}"
-    systemctl enable "${service}"
+    run systemctl enable "${service}"
 
     if systemctl is-active --quiet "${service}"; then
         info "${service} already running"
     else
         info "Starting service : ${service}"
-        systemctl start "${service}"
+        run systemctl start "${service}"
 
         if ! systemctl is-active --quiet "${service}"; then
-            fail "Failed to start service: ${service}"
+            die "Failed to start service: ${service}"
             return 1
         fi
 

@@ -2,7 +2,6 @@
 
 ### Common functions for the host machine
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
 COMMON_SH="${SCRIPT_DIR}/common_host.sh"
 
@@ -24,6 +23,8 @@ REQUIRED_TOOLS=(
     mdadm
     qemu-img
     qemu-nbd
+    qemu-system-x86_64
+    virsh
 )
 
 for tool in "${REQUIRED_TOOLS[@]}"
@@ -44,5 +45,9 @@ packer version
 ansible --version | head -1
 mdadm --version
 qemu-img --version | head -1
+
+[[ -e /dev/kvm ]] \
+    && info "/dev/kvm Present" \
+    || warn "/dev/kvm Missing"
 
 info "Bootstrap completed Successfully"

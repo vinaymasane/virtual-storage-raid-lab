@@ -2,7 +2,6 @@
 
 ### Common functions for the host machine
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
 COMMON_SH="${SCRIPT_DIR}/common_host.sh"
 
@@ -14,18 +13,14 @@ fi
 # shellcheck source=bootstrap/common_host.sh
 source "${COMMON_SH}"
 
-APP=raidlab
-LOGFILE=/var/log/${APP}-bootstrap.log
-
-exec > >(tee -a "$LOGFILE")
-exec 2>&1
+[[ $EUID -eq 0 ]] || die "Run using sudo."
 
 ### Function to install or upgrade APT packages
 install_or_upgrade_apt_pkg() {
 
     local pkg="$1"
 
-    if dpkg -s "${pkg}" >/dev/null 2>&1; then
+    if pkg_installed "${pkg}"; then
 
         info "${pkg} already installed"
 
@@ -34,7 +29,7 @@ install_or_upgrade_apt_pkg() {
 
             info "Upgrading ${pkg}"
 
-            apt install --only-upgrade -y "${pkg}"
+            run apt install --only-upgrade -y "${pkg}" || true
 
         else
             info "${pkg} already current"
@@ -44,7 +39,7 @@ install_or_upgrade_apt_pkg() {
 
         info "Installing ${pkg}"
 
-        apt install -y "${pkg}"
+        run apt install -y "${pkg}"
     fi
 }
 
@@ -144,7 +139,13 @@ BASE_PKGS=(
     vim
     jq
     unzip
+    tar
+    gzip
+    bzip2
     openssh-server
+    openssh-client
+    ca-certificates
+    apt-transport-https
     sudo
 )
 
@@ -152,6 +153,8 @@ VIRT_PKGS=(
     qemu-utils
     qemu-system-x86
     qemu-kvm
+    qemu-system-gui
+    qemu-block-extra
     libvirt-daemon-system
     libvirt-clients
     virtinst
@@ -159,15 +162,19 @@ VIRT_PKGS=(
     dnsmasq-base
     libguestfs-tools
     bridge-utils
+    ovmf
+    seabios
+    cloud-image-utils
 )
 
 STORAGE_PKGS=(
     mdadm
     util-linux
     parted
-    fdisk
+    gdisk
     e2fsprogs
     kpartx
+    dosfstools
 )
 
 AUTOMATION_PKGS=(
