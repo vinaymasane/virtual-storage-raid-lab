@@ -1,0 +1,13 @@
+- hosts: vm
+  become: yes
+  tasks:
+
+    - name: Install RAID tools
+      apt:
+        name: mdadm
+        state: present
+
+    - name: Enable SSH
+      service:
+        name: ssh
+        enabled: true
