@@ -18,6 +18,8 @@ type Config struct {
 	SSHUser       string
 	SSHHost       string
 	SSHPort       string
+	NBDDevice     string
+	LoopDevice    string
 }
 
 func DefaultConfig() *Config {
@@ -37,5 +39,7 @@ func DefaultConfig() *Config {
 		SSHUser:       "root",
 		SSHHost:       "127.0.0.1",
 		SSHPort:       "2222",
+		NBDDevice:     "/dev/nbd0",
+		LoopDevice:    "/dev/loop10",
 	}
 }
