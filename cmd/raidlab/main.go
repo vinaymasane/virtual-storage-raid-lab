@@ -58,6 +58,13 @@ func main() {
 	case "launch":
 		err = vm.LaunchVM()
 
+		if err == nil {
+			err = vm.WaitForVM()
+		}
+
+	case "stop":
+		err = vm.StopVM()
+
 	case "configure":
 		err = ansible.Run()
 

@@ -3,21 +3,29 @@ package vm
 import (
 	"net"
 	"time"
+
+	"github.com/vinaymasane/virtual-storage-raid-lab/internal/common"
 )
 
-func SSHReady() bool {
+func WaitForSSH() error {
 
-	for i := 0; i < 60; i++ {
+	cfg := common.DefaultConfig()
 
-		conn, err := net.DialTimeout("tcp", "127.0.0.1:2222", 2*time.Second)
+	return Retry(5*time.Minute, func() bool {
 
-		if err == nil {
-			conn.Close()
-			return true
+		conn, err := net.DialTimeout(
+			"tcp",
+			cfg.SSHHost+":"+cfg.SSHPort,
+			2*time.Second,
+		)
+
+		if err != nil {
+			return false
 		}
 
-		time.Sleep(2 * time.Second)
-	}
+		conn.Close()
 
-	return false
+		return true
+
+	})
 }

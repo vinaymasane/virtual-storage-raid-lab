@@ -67,3 +67,13 @@ func RunDir(dir string, name string, args ...string) error {
 
 	return nil
 }
+
+func StartBackground(cmd string, args ...string) error {
+
+	c := exec.Command(cmd, args...)
+
+	c.Stdout = os.Stdout
+	c.Stderr = os.Stderr
+
+	return c.Start()
+}

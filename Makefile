@@ -26,6 +26,9 @@ raid:
 launch:
 	sudo $(BIN) launch
 
+stop:
+	sudo $(BIN) stop
+
 configure:
 	sudo $(BIN) configure
 
