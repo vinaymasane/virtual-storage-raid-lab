@@ -8,6 +8,7 @@ import (
 	"github.com/vinaymasane/virtual-storage-raid-lab/internal/common"
 )
 
+// WaitForSerialConsole waits for the serial console to be ready by checking the log file for specific login prompts.
 func WaitForSerialConsole() error {
 
 	cfg := common.DefaultConfig()

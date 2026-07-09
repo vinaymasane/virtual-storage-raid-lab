@@ -7,6 +7,7 @@ import (
 	"github.com/vinaymasane/virtual-storage-raid-lab/internal/common"
 )
 
+// WaitForSSH waits for the SSH service to become available on the virtual machine.
 func WaitForSSH() error {
 
 	cfg := common.DefaultConfig()

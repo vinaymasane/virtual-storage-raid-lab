@@ -6,6 +6,7 @@ import (
 	"github.com/vinaymasane/virtual-storage-raid-lab/internal/common"
 )
 
+// CollectArtifacts collects various system artifacts and saves them to the specified artifact directory.
 func CollectArtifacts() error {
 
 	cfg := common.DefaultConfig()

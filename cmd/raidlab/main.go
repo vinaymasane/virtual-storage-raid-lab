@@ -23,8 +23,14 @@ func usage() {
 	fmt.Println("  launch")
 	fmt.Println("  configure")
 	fmt.Println("  verify")
+	fmt.Println("  stop")
+	fmt.Println("  collect")
+	fmt.Println("  clean")
 }
 
+/* main is the entry point of the raidlab command-line tool.
+ * It parses command-line arguments and executes the corresponding actions.
+ */
 func main() {
 
 	log.SetFlags(log.LstdFlags | log.Lshortfile)

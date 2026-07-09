@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 )
 
+// Config holds the configuration for the RAID lab environment.
 type Config struct {
 	RepoRoot      string
 	OutputDir     string
@@ -22,6 +23,7 @@ type Config struct {
 	LoopDevice    string
 }
 
+// DefaultConfig returns a default configuration for the RAID lab environment.
 func DefaultConfig() *Config {
 
 	root, _ := os.Getwd()

@@ -7,6 +7,7 @@ import (
 	"github.com/vinaymasane/virtual-storage-raid-lab/internal/common"
 )
 
+// CheckSerial checks the serial console log for a login prompt to verify that the virtual machine is ready.
 func CheckSerial() error {
 
 	cfg := common.DefaultConfig()

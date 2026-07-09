@@ -7,6 +7,7 @@ import (
 	"github.com/vinaymasane/virtual-storage-raid-lab/internal/common"
 )
 
+// LaunchVM launches the virtual machine using qemu-system-x86_64
 func LaunchVM() error {
 
 	cfg := common.DefaultConfig()

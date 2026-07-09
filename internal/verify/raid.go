@@ -2,6 +2,7 @@ package verify
 
 import "github.com/vinaymasane/virtual-storage-raid-lab/internal/common"
 
+// CheckRaid checks the RAID configuration and lists block devices on the virtual machine.
 func CheckRaid() error {
 
 	if err := common.Run(

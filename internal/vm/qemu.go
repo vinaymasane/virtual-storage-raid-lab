@@ -2,6 +2,7 @@ package vm
 
 import "os/exec"
 
+// StartVM starts the virtual machine using QEMU with the specified configuration.
 func StartVM() error {
 
 	return exec.Command(

@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 )
 
+// Copy copies a file from src to dst.
 func Copy(src, dst string) error {
 
 	in, err := os.Open(src)
@@ -27,6 +28,7 @@ func Copy(src, dst string) error {
 	return err
 }
 
+// Ensure creates the necessary directories for the artifact and output.
 func Ensure(cfg *Config) {
 
 	os.MkdirAll(cfg.OutputDir, 0755)

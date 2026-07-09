@@ -7,6 +7,7 @@ import (
 	"github.com/vinaymasane/virtual-storage-raid-lab/internal/common"
 )
 
+// CreateRaid creates a RAID 1 array using the specified devices.
 func CreateRaid() error {
 
 	cfg := common.DefaultConfig()

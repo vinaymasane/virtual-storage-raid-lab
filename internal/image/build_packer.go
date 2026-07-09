@@ -13,6 +13,7 @@ import (
 
 const packerDir = "packer"
 
+// BuildWithPacker builds the image using packer
 func BuildWithPacker() error {
 
 	if err := os.RemoveAll(filepath.Join(packerDir, "output-image")); err != nil {

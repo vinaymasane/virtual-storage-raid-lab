@@ -7,6 +7,7 @@ import (
 	"github.com/vinaymasane/virtual-storage-raid-lab/internal/common"
 )
 
+// CreateMirror sets up a mirrored storage configuration using QEMU NBD and loop devices.
 func CreateMirror() error {
 
 	cfg := common.DefaultConfig()

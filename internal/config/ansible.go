@@ -5,6 +5,7 @@ import (
 	"os/exec"
 )
 
+// RunAnsible executes the Ansible playbook to configure the virtual machine over SSH.
 func RunAnsible() error {
 
 	log.Println("Running Ansible configuration over SSH...")

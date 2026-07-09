@@ -5,6 +5,7 @@ import (
 	"time"
 )
 
+// WaitForVM waits for the virtual machine to become available by checking the serial console and SSH service.
 func WaitForVM() error {
 
 	if err := WaitForSerialConsole(); err != nil {
@@ -18,6 +19,10 @@ func WaitForVM() error {
 	return nil
 }
 
+/* Retry repeatedly executes the provided function
+ * until it returns true or the specified timeout is reached.
+ * It sleeps for 2 seconds between attempts.
+ */
 func Retry(timeout time.Duration, fn func() bool) error {
 
 	deadline := time.Now().Add(timeout)
