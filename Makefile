@@ -51,13 +51,20 @@ vet:
 tidy:
 	go mod tidy
 
-check:
+ci:
 	go test ./...
 
-test:
-	go test ./... -v
+coverage:
+	tests/scripts/coverage.sh
 
-lint:
-	go vet ./...
+integration:
+	tests/scripts/run_all.sh
+
+package:
+	scripts/release.sh
+
+docker:
+	docker build -t raidlab-dev -f Dockerfile.dev .
+
 
 .PHONY: all bootstrap build image mirror raid launch configure verify collect clean
