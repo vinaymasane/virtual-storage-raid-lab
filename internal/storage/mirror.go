@@ -3,7 +3,6 @@ package storage
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 
 	"github.com/vinaymasane/virtual-storage-raid-lab/internal/common"
 )

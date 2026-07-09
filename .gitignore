@@ -20,9 +20,10 @@ profile.cov
 # Dependency directories (remove the comment below to include it)
 # vendor/
 
-# Go workspace file
+# Go workspace files executable directory (remove the comment below to include it)
 go.work
 go.work.sum
+bin/
 
 # env file
 .env

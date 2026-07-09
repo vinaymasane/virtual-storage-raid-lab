@@ -1,0 +1,24 @@
+---
+- hosts: vm
+  become: true
+
+  tasks:
+
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    - name: Install packages
+      apt:
+        name:
+          - curl
+          - vim
+          - git
+          - mdadm
+        state: present
+
+    - name: Verify SSH
+      service:
+        name: ssh
+        state: started
+        enabled: yes

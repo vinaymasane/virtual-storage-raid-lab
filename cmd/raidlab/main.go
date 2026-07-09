@@ -5,9 +5,11 @@ import (
 	"log"
 	"os"
 
+	"github.com/vinaymasane/virtual-storage-raid-lab/internal/ansible"
+	"github.com/vinaymasane/virtual-storage-raid-lab/internal/common"
 	"github.com/vinaymasane/virtual-storage-raid-lab/internal/image"
 	"github.com/vinaymasane/virtual-storage-raid-lab/internal/storage"
-	"github.com/vinaymasane/virtual-storage-raid-lab/internal/common"
+	"github.com/vinaymasane/virtual-storage-raid-lab/internal/verify"
 	"github.com/vinaymasane/virtual-storage-raid-lab/internal/vm"
 )
 
