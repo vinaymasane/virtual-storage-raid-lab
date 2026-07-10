@@ -1,0 +1,83 @@
+environment: development
+
+build:
+
+  output_directory: output
+
+  packer_template: packer/debian13.pkr.hcl
+
+  image_name: disk_proto.qcow2
+
+  mirror_disk: disk_mirror.raw
+
+storage:
+
+  nbd_device: /dev/nbd0
+
+  secondary_disk: output/disk_mirror.raw
+
+  raid_device: /dev/md0
+
+vm:
+
+  backend: qemu
+
+  accelerator: kvm
+
+  memory_mb: 4096
+
+  cpus: 2
+
+  serial_log: artifacts/console/serial.log
+
+  ssh:
+
+    host: 127.0.0.1
+
+    port: 2222
+
+    username: root
+
+    password: root
+
+ansible:
+
+  inventory: ansible/inventory.ini
+
+  playbook: ansible/site.yml
+
+tests:
+
+  unit: true
+
+  integration: true
+
+  collect_artifacts: true
+
+coverage:
+
+  html: coverage/coverage.html
+
+  unit: coverage/unit.out
+
+  integration: coverage/integration.out
+
+artifacts:
+
+  root: artifacts
+
+  save_console: true
+
+  save_logs: true
+
+  save_reports: true
+
+timeouts:
+
+  image_minutes: 30
+
+  vm_boot_seconds: 300
+
+  ssh_seconds: 300
+
+  serial_seconds: 300

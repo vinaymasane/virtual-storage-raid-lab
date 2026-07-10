@@ -52,7 +52,7 @@ install_or_upgrade_go() {
 
         CURRENT=$(go version | awk '{print $3}')
 
-        info "Go already installed (${CURRENT})"
+        info "Go already installed: (${CURRENT})"
 
         if [[ "${CURRENT}" != "go${GO_VERSION}" ]]; then
 
@@ -60,7 +60,7 @@ install_or_upgrade_go() {
 
         else
 
-            info "Go already current (${CURRENT})"
+            info "Go already current: (${CURRENT})"
             return 0
 
         fi
@@ -84,6 +84,33 @@ install_or_upgrade_go() {
     info "Go ${GO_VERSION} installed Successfully"
 }
 
+### Function to install or upgrade golangci-lint
+install_or_upgrade_golangci_lint() {
+
+    info "Installing golangci-lint..."
+
+    if binary_exists golangci-lint; then
+
+        local current
+
+        current=$(golangci-lint version | awk '{print $4}')
+
+        info "golangci-lint already installed: (${current})"
+
+        return
+    fi
+
+    go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+
+    export PATH="$PATH:$(go env GOPATH)/bin"
+
+    binary_exists golangci-lint || die "golangci-lint installation failed"
+    
+    GOLANGCI_LINT_VERSION=$(golangci-lint version | awk '{print $4}')
+    info "golangci-lint ${GOLANGCI_LINT_VERSION} installed Successfully"
+
+}
+
 ### Function to install or upgrade Packer
 install_or_upgrade_packer() {
 
@@ -93,7 +120,7 @@ install_or_upgrade_packer() {
 
         CURRENT=$(packer version | awk '{print $2}')
 
-        info "Packer already installed (${CURRENT})"
+        info "Packer already installed: (${CURRENT})"
 
         if [[ "${CURRENT}" != "v${PACKER_VERSION}" ]]; then
 
@@ -221,7 +248,10 @@ done
 ### Install or upgrade Go and Packer
 install_or_upgrade_go
 
-### Install or upgrade Packerd
+### Install or upgrade golangci-lint
+install_or_upgrade_golangci_lint
+
+### Install or upgrade Packer
 install_or_upgrade_packer
 
 ### Ensure that the SSH service is running

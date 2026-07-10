@@ -34,5 +34,11 @@ func CollectArtifacts() error {
 		"ip addr > artifacts/reports/ipaddr.txt",
 	)
 
+	common.Run(
+		"bash",
+		"-c",
+		"journalctl -u ssh > artifacts/reports/ssh.log",
+	)
+
 	return nil
 }

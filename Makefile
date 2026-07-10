@@ -1,86 +1,157 @@
-APP=raidlab
+# ============================================================================
+# virtual-storage-raid-lab
+# Makefile
+# ============================================================================
 
-BIN=bin/$(APP)
+PROJECT := raidlab
+BIN  := bin/$(PROJECT)
 
-GO=go
+GO := go
 
-## Targets
-all: build
+.PHONY: help bootstrap build image
 
-## Bootstrap the host environment
+help:
+	@echo ""
+	@echo "Available Targets"
+	@echo "-----------------"
+	@echo "make bootstrap"
+	@echo "make build"
+	@echo "make image"
+	@echo "make mirror"
+	@echo "make raid"
+	@echo "make launch"
+	@echo "make configure"
+	@echo "make test"
+	@echo "make collect"
+	@echo "make clean"
+
 bootstrap:
+	@chmod +x bootstrap/*.sh
 	sudo ./bootstrap/preinstall_host.sh
 
-## Build the raidlab binary
 build:
-	mkdir -p bin
+	@mkdir -p bin
 	$(GO) mod tidy
-	$(GO) build -o $(BIN) ./cmd/raidlab
+	$(GO) build -o $(BIN) ./cmd/$(PROJECT)
 
-## Build the image using packer
-image:
-	$(BIN) build
+image: build
+	$(BIN) image
 
-## Build Mirror raw image
+# ============================================================================
+# Storage
+# ============================================================================
+
+.PHONY: mirror raid
+
 mirror:
-	sudo $(BIN) mirror
+	$(BIN) mirror
 
-## Build RAID lab environment
 raid:
 	sudo $(BIN) raid
 
-## Launch the RAID lab environment
+# ============================================================================
+# Virtual Machine
+# ============================================================================
+
+.PHONY: launch stop reboot status
+
 launch:
 	sudo $(BIN) launch
-## Stop the RAID lab environment
+
 stop:
 	sudo $(BIN) stop
 
-## Configure the RAID lab environment
+reboot:
+	sudo $(BIN) reboot
+
+status:
+	$(BIN) status
+
+# ============================================================================
+# Configuration
+# ============================================================================
+
+.PHONY: configure verify
+
 configure:
 	sudo $(BIN) configure
 
-## Verify the RAID lab environment
 verify:
-	sudo $(BIN) verify
+	$(BIN) verify
 
-## Collect artifacts from the RAID lab environment
+# ============================================================================
+# Testing
+# ============================================================================
+
+.PHONY: test
+
+test:
+	$(BIN) test
+
+# ============================================================================
+# Unit / Integration Tests
+# ============================================================================
+
+.PHONY: unit integration
+
+unit:
+	$(GO) test ./tests/unit/... -v
+
+integration:
+	$(GO) test ./tests/integration/... -v
+
+# ============================================================================
+# Code Quality
+# ============================================================================
+
+.PHONY: fmt vet lint coverage
+
+fmt:
+	$(GO) fmt ./...
+
+vet:
+	$(GO) vet ./...
+
+lint:
+	golangci-lint run ./...
+
+tidy:
+	$(GO) mod tidy
+
+coverage:
+	$(GO) test ./... -coverprofile=coverage.out
+	$(GO) tool cover -html=coverage.out -o coverage.html
+
+# ============================================================================
+# Artifacts
+# ============================================================================
+
+.PHONY: collect
+
 collect:
-	sudo ./bootstrap/collect_host.sh
+	$(BIN) collect
 
-## Clean up the RAID lab environment
+# ============================================================================
+# Cleanup
+# ============================================================================
+
+.PHONY: clean
+
 clean:
 	sudo ./bootstrap/cleanup_host.sh
-	rm -rf bin output artifacts
+	@rm -rf bin output artifacts coverage*
 
-### Development targets
-## Format the Go code
-fmt:
-	go fmt ./...
+## Check target runs all the checks: formatting, vetting, linting, and unit tests
+check:
+	make fmt
+	make vet
+	make lint
+	make unit
 
-## Run Go vet to check for potential issues
-vet:
-	go vet ./...
-
-## Run Go lint to analyze the code for style and potential errors
-lint:
-	golangci-lint run
-
-## Run Go mod tidy to clean up the go.mod and go.sum files
-tidy:
-	go mod tidy
-
-## Run all tests in the project
+## Continuous Integration target runs all checks and integration tests
 ci:
-	go test ./...
-
-## Run tests with coverage analysis
-coverage:
-	tests/scripts/coverage.sh
-
-## Run integration tests
-integration:
-	tests/scripts/run_all.sh
+	make check
+	make integration
 
 ## Package the project for release
 package:
