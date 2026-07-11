@@ -150,6 +150,18 @@ install_or_upgrade_packer() {
     info "Packer ${PACKER_VERSION} installed Successfully"
 }
 
+### Function to generate test SSH keys
+generate_test_ssh_keys() {
+
+    local dir="tests/testdata/ssh_keys"
+
+    mkdir -p "$dir"
+
+    if [ ! -f "$dir/id_rsa" ]; then
+        ssh-keygen -q -t ed25519 -N "" -f "$dir/id_ed25519" || die "Failed to generate SSH keys"
+    fi
+}
+
 ### Pre-installation steps for the host machine
 info "Updating package repository"
 
@@ -253,6 +265,9 @@ install_or_upgrade_golangci_lint
 
 ### Install or upgrade Packer
 install_or_upgrade_packer
+
+### Generate test SSH keys
+generate_test_ssh_keys
 
 ### Ensure that the SSH service is running
 ensure_service_running ssh

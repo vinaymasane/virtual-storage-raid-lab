@@ -1,0 +1,12 @@
+vm:
+  name: raidlab
+  image: output/disk_proto.qcow2
+
+ssh:
+  host: 127.0.0.1
+  port: 2222
+  user: root
+
+raid:
+  device: /dev/md0
+  level: raid1
