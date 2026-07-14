@@ -1,59 +1,66 @@
 # Virtual Storage RAID Lab
-Tech Stack : RAID Storage Virtualization
 
-## Objective
-Build a production-grade Linux image capable of:
+## Requirements
 
-* Booting under QEMU/KVM
-* Supporting SSH access
-* Being exposed as a host block device via qemu-nbd
-* Participating in a software RAID1 mirror using mdadm
-* Successfully booting as a RAID-backed virtual machine
+- Debian 13 Host
+- Go 1.24+
+- Packer
+- QEMU/KVM
+- qemu-nbd
+- mdadm
+- Ansible
 
-## System Architecture
+## Build
 
-```
- disk_proto.qcow2
-        |
-     qemu-nbd
-        |
-    /dev/nbd0
-        |
-        +----------+
-                   |
-             secondary.raw
-                   |
-             /dev/loop0
-                   |
-             mdadm RAID1
-                   |
-                /dev/md0
-                   |
-               ext4 root
-                   |
-                GRUB2
-                   |
-             QEMU Virtual VM
+```bash
+make bootstrap
+make build
 ```
 
+## Execution
 
-## Host Environment
-
-### Recommended Host OS:
-
-Debian 13 (Trixie)
-
-### Required Packages:
-
-Refer to the PACKAGEs list under file: `./bootstrap/preinstall_host.sh`
-
-### Config and Validation:
+```bash
+make image
+make mirror
+make raid
+make launch
+make configure
+make verify
+make collect
 ```
-cd virtual-storage-raid-lab
 
-chmod +x bootstrap/*.sh
+## Architecture
 
-sudo ./bootstrap/preinstall_host.sh
-
-./bootstrap/validate_host.sh
 ```
+Bootstrap
+     |
+Packer Build
+     |
+disk_proto.qcow2
+     |
+qemu-nbd
+     |
+RAID1
+     |
+Launch VM
+     |
+ttyS0
+     |
+SSH
+     |
+Ansible
+     |
+Validation
+     |
+Artifacts
+```
+
+## Deliverables
+
+- disk_proto.qcow2
+- RAID1
+- ttyS0
+- SSH
+- mdadm
+- Validation
+- Artifact Collection

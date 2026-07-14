@@ -1,0 +1,14 @@
+FROM debian:13
+
+RUN apt-get update && apt-get install -y \
+golang \
+packer \
+qemu-system-x86 \
+qemu-utils \
+libvirt-clients \
+mdadm \
+ansible \
+git \
+make
+
+WORKDIR /workspace

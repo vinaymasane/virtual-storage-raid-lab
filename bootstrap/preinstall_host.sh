@@ -2,7 +2,6 @@
 
 ### Common functions for the host machine
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
 COMMON_SH="${SCRIPT_DIR}/common_host.sh"
 
@@ -14,18 +13,14 @@ fi
 # shellcheck source=bootstrap/common_host.sh
 source "${COMMON_SH}"
 
-APP=raidlab
-LOGFILE=/var/log/${APP}-bootstrap.log
-
-exec > >(tee -a "$LOGFILE")
-exec 2>&1
+[[ $EUID -eq 0 ]] || die "Run using sudo."
 
 ### Function to install or upgrade APT packages
 install_or_upgrade_apt_pkg() {
 
     local pkg="$1"
 
-    if dpkg -s "${pkg}" >/dev/null 2>&1; then
+    if pkg_installed "${pkg}"; then
 
         info "${pkg} already installed"
 
@@ -34,7 +29,7 @@ install_or_upgrade_apt_pkg() {
 
             info "Upgrading ${pkg}"
 
-            apt install --only-upgrade -y "${pkg}"
+            run apt install --only-upgrade -y "${pkg}" || true
 
         else
             info "${pkg} already current"
@@ -44,7 +39,7 @@ install_or_upgrade_apt_pkg() {
 
         info "Installing ${pkg}"
 
-        apt install -y "${pkg}"
+        run apt install -y "${pkg}"
     fi
 }
 
@@ -57,7 +52,7 @@ install_or_upgrade_go() {
 
         CURRENT=$(go version | awk '{print $3}')
 
-        info "Go already installed (${CURRENT})"
+        info "Go already installed: (${CURRENT})"
 
         if [[ "${CURRENT}" != "go${GO_VERSION}" ]]; then
 
@@ -65,7 +60,7 @@ install_or_upgrade_go() {
 
         else
 
-            info "Go already current (${CURRENT})"
+            info "Go already current: (${CURRENT})"
             return 0
 
         fi
@@ -89,6 +84,33 @@ install_or_upgrade_go() {
     info "Go ${GO_VERSION} installed Successfully"
 }
 
+### Function to install or upgrade golangci-lint
+install_or_upgrade_golangci_lint() {
+
+    info "Installing golangci-lint..."
+
+    if binary_exists golangci-lint; then
+
+        local current
+
+        current=$(golangci-lint version | awk '{print $4}')
+
+        info "golangci-lint already installed: (${current})"
+
+        return
+    fi
+
+    go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+
+    export PATH="$PATH:$(go env GOPATH)/bin"
+
+    binary_exists golangci-lint || die "golangci-lint installation failed"
+    
+    GOLANGCI_LINT_VERSION=$(golangci-lint version | awk '{print $4}')
+    info "golangci-lint ${GOLANGCI_LINT_VERSION} installed Successfully"
+
+}
+
 ### Function to install or upgrade Packer
 install_or_upgrade_packer() {
 
@@ -98,7 +120,7 @@ install_or_upgrade_packer() {
 
         CURRENT=$(packer version | awk '{print $2}')
 
-        info "Packer already installed (${CURRENT})"
+        info "Packer already installed: (${CURRENT})"
 
         if [[ "${CURRENT}" != "v${PACKER_VERSION}" ]]; then
 
@@ -128,6 +150,18 @@ install_or_upgrade_packer() {
     info "Packer ${PACKER_VERSION} installed Successfully"
 }
 
+### Function to generate test SSH keys
+generate_test_ssh_keys() {
+
+    local dir="tests/testdata/ssh_keys"
+
+    mkdir -p "$dir"
+
+    if [ ! -f "$dir/id_rsa" ]; then
+        ssh-keygen -q -t ed25519 -N "" -f "$dir/id_ed25519" || die "Failed to generate SSH keys"
+    fi
+}
+
 ### Pre-installation steps for the host machine
 info "Updating package repository"
 
@@ -144,7 +178,13 @@ BASE_PKGS=(
     vim
     jq
     unzip
+    tar
+    gzip
+    bzip2
     openssh-server
+    openssh-client
+    ca-certificates
+    apt-transport-https
     sudo
 )
 
@@ -152,6 +192,8 @@ VIRT_PKGS=(
     qemu-utils
     qemu-system-x86
     qemu-kvm
+    qemu-system-gui
+    qemu-block-extra
     libvirt-daemon-system
     libvirt-clients
     virtinst
@@ -159,15 +201,19 @@ VIRT_PKGS=(
     dnsmasq-base
     libguestfs-tools
     bridge-utils
+    ovmf
+    seabios
+    cloud-image-utils
 )
 
 STORAGE_PKGS=(
     mdadm
     util-linux
     parted
-    fdisk
+    gdisk
     e2fsprogs
     kpartx
+    dosfstools
 )
 
 AUTOMATION_PKGS=(
@@ -214,8 +260,14 @@ done
 ### Install or upgrade Go and Packer
 install_or_upgrade_go
 
-### Install or upgrade Packerd
+### Install or upgrade golangci-lint
+install_or_upgrade_golangci_lint
+
+### Install or upgrade Packer
 install_or_upgrade_packer
+
+### Generate test SSH keys
+generate_test_ssh_keys
 
 ### Ensure that the SSH service is running
 ensure_service_running ssh

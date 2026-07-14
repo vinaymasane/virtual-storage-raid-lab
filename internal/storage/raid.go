@@ -1,17 +1,73 @@
 package storage
 
-import "os/exec"
+import (
+	"os"
+	"time"
 
-func CreateRAID() error {
+	"github.com/vinaymasane/virtual-storage-raid-lab/internal/common"
+)
 
-	return exec.Command(
+// CreateRaid creates a RAID 1 array using the specified devices.
+func CreateRaid() error {
+
+	cfg := common.DefaultConfig()
+
+	if _, err := os.Stat("/dev/nbd0"); err != nil {
+		return err
+	}
+
+	if err := common.Run(
 		"mdadm",
 		"--create",
-		"/dev/md0",
+		cfg.RaidDevice,
 		"--level=1",
 		"--raid-devices=2",
-		"/dev/nbd0p1",
-		"/dev/nbd1p1",
-		"--metadata=1.0",
-	).Run()
+		"/dev/nbd0",
+		"/dev/loop10",
+		"--force",
+		"--run",
+	); err != nil {
+		return err
+	}
+
+	time.Sleep(5 * time.Second)
+
+	if err := common.Run(
+		"partprobe",
+		cfg.RaidDevice,
+	); err != nil {
+		return err
+	}
+
+	if err := common.Run(
+		"udevadm",
+		"settle",
+	); err != nil {
+		return err
+	}
+
+	if err := common.Run(
+		"e2fsck",
+		"-fy",
+		cfg.RaidDevice,
+	); err != nil {
+		return err
+	}
+
+	if err := common.Run(
+		"resize2fs",
+		cfg.RaidDevice,
+	); err != nil {
+		return err
+	}
+
+	if err := common.Run(
+		"mdadm",
+		"--detail",
+		cfg.RaidDevice,
+	); err != nil {
+		return err
+	}
+
+	return nil
 }

@@ -1,8 +1,28 @@
-#!/usr/bin/env bash
+#!/bin/bash
+set -eux
 
-### Set error handling options
-set -Eeuo pipefail
+apt-get update
 
-apt update
-apt install -y openssh-server sudo mdadm qemu-guest-agent
+apt-get install -y \
+openssh-server \
+cloud-init \
+sudo \
+curl \
+vim
+
 systemctl enable ssh
+
+grep -q ttyS0 /etc/default/grub || \
+sed -i \
+'s/GRUB_CMDLINE_LINUX="/GRUB_CMDLINE_LINUX="console=ttyS0 /' \
+/etc/default/grub
+
+update-grub
+
+systemctl enable ssh
+
+systemctl start ssh
+
+passwd -d root
+
+mkdir -p /root/.ssh
