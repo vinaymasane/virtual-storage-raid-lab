@@ -28,6 +28,7 @@ help:
 bootstrap:
 	@chmod +x bootstrap/*.sh
 	sudo ./bootstrap/preinstall_host.sh
+	$(BIN) bootstrap
 
 build:
 	@mkdir -p bin

@@ -1,44 +1,38 @@
 environment: development
 
-build:
+image:
 
   output_directory: output
-
   packer_template: packer/debian13.pkr.hcl
-
   image_name: disk_proto.qcow2
+  format: qcow2
 
   mirror_disk: disk_mirror.raw
+  mirror_format: raw
 
 storage:
 
   nbd_device: /dev/nbd0
-
+  primary_disk: output/disk_proto.qcow2
   secondary_disk: output/disk_mirror.raw
-
   raid_device: /dev/md0
 
 vm:
 
+  name: raidlab
   backend: qemu
-
   accelerator: kvm
-
   memory_mb: 4096
-
   cpus: 2
-
   serial_log: artifacts/console/serial.log
 
   ssh:
 
     host: 127.0.0.1
-
     port: 2222
-
     username: root
-
     password: root
+    private_key: tests/testdata/ssh_keys/id_ed25519
 
 ansible:
 
@@ -63,6 +57,8 @@ coverage:
   integration: coverage/integration.out
 
 artifacts:
+
+  output_dir: artifacts
 
   root: artifacts
 

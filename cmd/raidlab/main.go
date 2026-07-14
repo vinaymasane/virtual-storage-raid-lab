@@ -14,9 +14,8 @@ import (
 
 	"github.com/vinaymasane/virtual-storage-raid-lab/internal/ansible"
 	"github.com/vinaymasane/virtual-storage-raid-lab/internal/artifact"
-	//"github.com/vinaymasane/virtual-storage-raid-lab/internal/artifact"
 	"github.com/vinaymasane/virtual-storage-raid-lab/internal/common"
-	//"github.com/vinaymasane/virtual-storage-raid-lab/internal/health"
+	"github.com/vinaymasane/virtual-storage-raid-lab/internal/config"
 	"github.com/vinaymasane/virtual-storage-raid-lab/internal/image"
 	"github.com/vinaymasane/virtual-storage-raid-lab/internal/storage"
 	"github.com/vinaymasane/virtual-storage-raid-lab/internal/vm"
@@ -93,7 +92,11 @@ func (a *Application) run() error {
 		printVersion()
 
 	case "bootstrap":
-		return health.PreFlight()
+		_, err := config.Load("configs/config.yaml")
+		if err != nil {
+			log.Fatal(err)
+		}
+		return common.PreFlight()
 
 	case "build":
 		return image.BuildWithPacker()
@@ -125,9 +128,6 @@ func (a *Application) run() error {
 	case "collect":
 	    c := artifact.New()
 		return c.Collect()
-
-	case "cleanup":
-		return common.Cleanup()
 
 	case "test":
 		return runTests()
@@ -191,7 +191,6 @@ Commands
 
     collect
 
-    cleanup
 
 Examples
 
