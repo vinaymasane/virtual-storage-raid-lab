@@ -7,12 +7,10 @@ import (
 	"github.com/ekagra/virtual-storage-raid-lab/internal/config"
 )
 
-func VerifySerial(cfg *config.Config) error {
+func VerifyImage(cfg *config.Config) error {
 
-	const serialLog = "artifacts/serial.log"
-
-	if !common.Exists(serialLog) {
-		return fmt.Errorf("serial log missing")
+	if !common.Exists(cfg.Image.Output) {
+		return fmt.Errorf("missing image %s", cfg.Image.Output)
 	}
 
 	return nil

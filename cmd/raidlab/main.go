@@ -19,6 +19,7 @@ import (
 	"github.com/vinaymasane/virtual-storage-raid-lab/internal/image"
 	"github.com/vinaymasane/virtual-storage-raid-lab/internal/storage"
 	"github.com/vinaymasane/virtual-storage-raid-lab/internal/vm"
+	"github.com/vinaymasane/virtual-storage-raid-lab/internal/verify"
 )
 
 const (
@@ -139,7 +140,16 @@ func (a *Application) run() error {
 		return runIntegrationTests()
 
 	case "verify":
-		return verify()
+		cfg, err := config.Load("configs/config.yaml")
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		if err := common.PreFlight(); err != nil {
+			log.Fatal(err)
+		}
+
+		return verify.Verify(cfg)
 
 	default:
 		return fmt.Errorf("unknown command: %s", cmd)

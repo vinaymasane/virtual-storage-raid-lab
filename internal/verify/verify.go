@@ -1,26 +1,32 @@
 package verify
 
-// Run executes a series of verification checks, including checking the serial console, SSH service, RAID configuration, and collecting artifacts. It returns an error if any of the checks fail.
-func Run() error {
+import (
+	"fmt"
 
-	checks := []func() error{
+	"github.com/ekagra/virtual-storage-raid-lab/internal/config"
+	"github.com/vinaymasane/virtual-storage-raid-lab/internal/common"
+)
 
-		CheckSerial,
-
-		CheckSSH,
-
-		CheckRaid,
-
-		CollectArtifacts,
+func Verify(cfg *config.Config) error {
+	checks := []struct {
+		name string
+		fn   func(*config.Config) error
+	}{
+		{"Image", VerifyImage},
+		{"RAID", VerifyRAID},
+		{"VM", VerifyVM},
+		{"SSH", VerifySSH},
+		{"Serial", VerifySerial},
+		{"Artifacts", VerifyArtifacts},
 	}
 
 	for _, c := range checks {
 
-		if err := c(); err != nil {
-			return err
+		if err := c.fn(cfg); err != nil {
+			return fmt.Errorf("%s verification failed: %w", c.name, err)
 		}
-
 	}
 
+	common.Info("Verification completed Successfully.")
 	return nil
 }

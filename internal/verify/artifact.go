@@ -1,44 +1,26 @@
 package verify
 
 import (
-	"os"
+	"fmt"
 
-	"github.com/vinaymasane/virtual-storage-raid-lab/internal/common"
+	"github.com/ekagra/virtual-storage-raid-lab/internal/common"
+	"github.com/ekagra/virtual-storage-raid-lab/internal/config"
 )
 
-// CollectArtifacts collects various system artifacts and saves them to the specified artifact directory.
-func CollectArtifacts() error {
+func VerifyArtifacts(cfg *config.Config) error {
 
-	cfg := common.DefaultConfig()
+	files := []string{
+		"artifacts/mdstat.txt",
+		"artifacts/lsblk.txt",
+		"artifacts/serial.log",
+	}
 
-	os.MkdirAll(
-		cfg.ArtifactDir+"/reports",
-		0755,
-	)
+	for _, f := range files {
 
-	common.Run(
-		"bash",
-		"-c",
-		"cat /proc/mdstat > artifacts/reports/mdstat.txt",
-	)
-
-	common.Run(
-		"bash",
-		"-c",
-		"lsblk -f > artifacts/reports/lsblk.txt",
-	)
-
-	common.Run(
-		"bash",
-		"-c",
-		"ip addr > artifacts/reports/ipaddr.txt",
-	)
-
-	common.Run(
-		"bash",
-		"-c",
-		"journalctl -u ssh > artifacts/reports/ssh.log",
-	)
+		if !common.Exists(f) {
+			return fmt.Errorf("missing artifact %s", f)
+		}
+	}
 
 	return nil
 }

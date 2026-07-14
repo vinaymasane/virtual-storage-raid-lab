@@ -1,22 +1,23 @@
 package verify
 
-import "github.com/vinaymasane/virtual-storage-raid-lab/internal/common"
+import (
+	"fmt"
+	"strings"
 
-// CheckRaid checks the RAID configuration and lists block devices on the virtual machine.
-func CheckRaid() error {
+	"github.com/ekagra/virtual-storage-raid-lab/internal/common"
+	"github.com/ekagra/virtual-storage-raid-lab/internal/config"
+)
 
-	if err := common.Run(
-		"bash",
-		"-c",
-		"cat /proc/mdstat",
-	); err != nil {
+func VerifyRAID(cfg *config.Config) error {
 
+	out, err := common.Output("cat", "/proc/mdstat")
+	if err != nil {
 		return err
-
 	}
 
-	return common.Run(
-		"lsblk",
-		"-f",
-	)
+	if !strings.Contains(string(out), cfg.Storage.RAIDDevice) {
+		return fmt.Errorf("%s not active", cfg.Storage.RAIDDevice)
+	}
+
+	return nil
 }

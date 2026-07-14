@@ -1,28 +1,21 @@
 package verify
 
 import (
-	"net"
+	"fmt"
 
-	"github.com/vinaymasane/virtual-storage-raid-lab/internal/common"
+	"github.com/ekagra/virtual-storage-raid-lab/internal/common"
+	"github.com/ekagra/virtual-storage-raid-lab/internal/config"
 )
 
-// CheckSSH checks if the SSH service is available on the virtual machine by attempting to establish a TCP connection.
-func CheckSSH() error {
+func VerifySSH(cfg *config.Config) error {
 
-	cfg := common.DefaultConfig()
-
-	c, err := net.Dial(
-		"tcp",
-		cfg.SSHHost+":"+cfg.SSHPort,
+	_, err := common.Output(
+		"ssh",
+		"-i", cfg.SSH.Key,
+		"-p", fmt.Sprint(cfg.SSH.Port),
+		cfg.SSH.User+"@"+cfg.SSH.Host,
+		"echo ok",
 	)
 
-	if err != nil {
-
-		return err
-
-	}
-
-	c.Close()
-
-	return nil
+	return err
 }
