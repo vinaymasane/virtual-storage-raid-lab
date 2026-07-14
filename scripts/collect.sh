@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
 
-set -e
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "${ROOT}"
 
 echo "[INFO] Collecting runtime artifacts..."
 
-make collect
-
+make collect                                                 
 echo "[INFO] Done."

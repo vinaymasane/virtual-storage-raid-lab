@@ -1,25 +1,25 @@
 package ansible
 
 import (
+	"fmt"
 	"os"
-	"path/filepath"
+
+	"github.com/ekagra/virtual-storage-raid-lab/internal/config"
 )
 
-func GenerateInventory() error {
+func GenerateInventory(cfg *config.Config) error {
 
-	// Allow override via ANSIBLE_DIR env var, fallback to ./ansible
-	ansibleDir := os.Getenv("ANSIBLE_DIR")
-	if ansibleDir == "" {
-		ansibleDir = "./ansible"
-	}
+	content := fmt.Sprintf(`[raidlab]
+%s ansible_user=%s ansible_port=%d ansible_ssh_private_key_file=%s`,
+		cfg.SSH.Host,
+		cfg.SSH.User,
+		cfg.SSH.Port,
+		cfg.SSH.Key,
+	)
 
-	if err := os.MkdirAll(ansibleDir, 0o755); err != nil {
-		return err
-	}
-
-	data := `[vm]
-127.0.0.1 ansible_port=2222 ansible_user=root ansible_password=root ansible_connection=ssh ansible_ssh_common_args='-o StrictHostKeyChecking=no'
-`
-
-	return os.WriteFile(filepath.Join(ansibleDir, "inventory.ini"), []byte(data), 0o644)
+	return os.WriteFile(
+		cfg.Ansible.Inventory,
+		[]byte(content),
+		0644,
+	)
 }

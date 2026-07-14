@@ -29,3 +29,10 @@ func CheckDependencies() error {
 
 	return nil
 }
+
+func CheckDependency(name string) error {
+
+	_, err := exec.LookPath(name)
+
+	return err
+}
