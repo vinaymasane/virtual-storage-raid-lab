@@ -3,13 +3,15 @@ package common
 import (
 	"fmt"
 	"os/exec"
+
+	"github.com/vinaymasane/virtual-storage-raid-lab/internal/common"
 )
 
 var RequiredTools = []string{
+	"git",
 	"go",
 	"packer",
 	"ansible-playbook",
-	"git",
 	"qemu-img",
 	"qemu-system-x86_64",
 	"qemu-nbd",
@@ -22,7 +24,7 @@ func CheckDependencies() error {
 	for _, t := range RequiredTools {
 
 		if _, err := exec.LookPath(t); err != nil {
-			return fmt.Errorf("dependency missing : %s", t)
+			return common.Error("Dependency Missing: %s", t)
 		}
 
 	}

@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/vinaymasane/virtual-storage-raid-lab/internal/ansible"
+	"github.com/vinaymasane/virtual-storage-raid-lab/internal/artifact"
 	//"github.com/vinaymasane/virtual-storage-raid-lab/internal/artifact"
 	"github.com/vinaymasane/virtual-storage-raid-lab/internal/common"
 	//"github.com/vinaymasane/virtual-storage-raid-lab/internal/health"
@@ -122,7 +123,8 @@ func (a *Application) run() error {
 		return ansible.Run()
 
 	case "collect":
-		return artifact.Collect()
+	    c := artifact.New()
+		return c.Collect()
 
 	case "cleanup":
 		return common.Cleanup()
@@ -269,11 +271,13 @@ func runIntegrationTests() error {
 
 func verify() error {
 
-	log.Println("Running repository verification...")
+	common.Info("Running repository verification...")
+
+	collector := artifact.New()
 
 	steps := []func() error{
 
-		health.PreFlight,
+		common.PreFlight,
 
 		vm.WaitForVM,
 
@@ -281,7 +285,7 @@ func verify() error {
 
 		vm.WaitForSSH,
 
-		artifact.Collect,
+		collector.Collect,
 	}
 
 	for _, s := range steps {

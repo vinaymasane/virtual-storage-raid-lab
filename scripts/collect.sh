@@ -1,12 +1,9 @@
 #!/usr/bin/env bash
+
 set -e
 
-mkdir -p artifacts/final
+echo "[INFO] Collecting runtime artifacts..."
 
-cp -r artifacts/* artifacts/final/ 2>/dev/null || true
+make collect
 
-journalctl -xe > artifacts/final/journal.log || true
-
-dmesg > artifacts/final/dmesg.log || true
-
-virsh list --all > artifacts/final/libvirt.txt || true
+echo "[INFO] Done."

@@ -1,26 +1,15 @@
 package common
 
-import (
-	"io"
-	"log"
-	"os"
-	"path/filepath"
-)
+import "log"
 
-func InitLogger(cfg *Config) {
+func Info(msg string) {
+	log.Printf("[INFO ] %s", msg)
+}
 
-	os.MkdirAll(filepath.Join(cfg.ArtifactDir, "logs"), 0755)
+func Warn(msg string) {
+	log.Printf("[WARN ] %s", msg)
+}
 
-	f, err := os.OpenFile(
-		filepath.Join(cfg.ArtifactDir, "logs", "raidlab.log"),
-		os.O_CREATE|os.O_WRONLY|os.O_APPEND,
-		0644,
-	)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	log.SetOutput(io.MultiWriter(os.Stdout, f))
-	log.SetFlags(log.LstdFlags | log.Lshortfile)
+func Error(msg string) {
+	log.Printf("[ERROR] %s", msg)
 }
