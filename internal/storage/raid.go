@@ -5,12 +5,11 @@ import (
 	"time"
 
 	"github.com/vinaymasane/virtual-storage-raid-lab/internal/common"
+	"github.com/vinaymasane/virtual-storage-raid-lab/internal/config"
 )
 
 // CreateRaid creates a RAID 1 array using the specified devices.
-func CreateRaid() error {
-
-	cfg := common.DefaultConfig()
+func CreateRaid(cfg *config.Config) error {
 
 	if _, err := os.Stat("/dev/nbd0"); err != nil {
 		return err

@@ -21,10 +21,10 @@ func CheckDependencies() error {
 
 	for _, t := range RequiredTools {
 
-		if _, err := exec.LookPath(t); err != nil {
-			return fmt.Errorf("Dependency Missing: %s", t)
+		if err := CheckDependency(t); err != nil {
+			Error("Dependency check failed for required tool: " + t + " " + err.Error())
+			return err
 		}
-
 	}
 
 	return nil
@@ -32,7 +32,10 @@ func CheckDependencies() error {
 
 func CheckDependency(name string) error {
 
-	_, err := exec.LookPath(name)
+	if _, err := exec.LookPath(name); err != nil {
+		Error("Missing required tool : " + name + " " + err.Error())
+		return err
+	}
 
-	return err
+	return nil
 }

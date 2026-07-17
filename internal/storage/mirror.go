@@ -5,12 +5,11 @@ import (
 	"os"
 
 	"github.com/vinaymasane/virtual-storage-raid-lab/internal/common"
+	"github.com/vinaymasane/virtual-storage-raid-lab/internal/config"
 )
 
 // CreateMirror sets up a mirrored storage configuration using QEMU NBD and loop devices.
-func CreateMirror() error {
-
-	cfg := common.DefaultConfig()
+func CreateMirror(cfg *config.Config) error {
 
 	if err := common.Run(
 		"modprobe",
@@ -40,7 +39,7 @@ func CreateMirror() error {
 		return err
 	}
 
-	if _, err := os.Stat(cfg.SecondaryDisk); os.IsNotExist(err) {
+	if _, err := os.Stat(cfg.storage.secondary_disk); os.IsNotExist(err) {
 
 		if err := common.Run(
 			"qemu-img",

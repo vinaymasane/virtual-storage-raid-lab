@@ -5,12 +5,11 @@ import (
 	"os"
 
 	"github.com/vinaymasane/virtual-storage-raid-lab/internal/common"
+	"github.com/vinaymasane/virtual-storage-raid-lab/internal/config"
 )
 
 // LaunchVM launches the virtual machine using qemu-system-x86_64
-func LaunchVM() error {
-
-	cfg := common.DefaultConfig()
+func LaunchVM(cfg *config.Config) error {
 
 	if _, err := os.Stat(cfg.ImageFile); err != nil {
 		return fmt.Errorf("image not found: %s", cfg.ImageFile)

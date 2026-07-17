@@ -3,12 +3,12 @@ package config
 import (
 	"os"
 
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 func Load(file string) (*Config, error) {
 
-	cfg := &Config{}
+	cfg := DefaultConfig()
 
 	data, err := os.ReadFile(file)
 	if err != nil {
@@ -19,30 +19,28 @@ func Load(file string) (*Config, error) {
 		return nil, err
 	}
 
-	applyDefaults(cfg)
-
 	return cfg, Validate(cfg)
 }
 
-func applyDefaults(cfg *Config) {
+func DefaultConfig() *Config {
 
-	if cfg.Image.Format == "" {
-		cfg.Image.Format = "qcow2"
-	}
+	return &Config{
 
-	if cfg.Artifact.OutputDir == "" {
-		cfg.Artifact.OutputDir = "artifacts"
-	}
+		Image: ImageConfig{
+			Format: "qcow2",
+		},
 
-	if cfg.SSH.Port == 0 {
-		cfg.SSH.Port = 2222
-	}
+		Artifact: ArtifactConfig{
+			OutputDir: "artifacts",
+		},
 
-	if cfg.Ansible.Inventory == "" {
-		cfg.Ansible.Inventory = "ansible/inventory.ini"
-	}
+		SSH: SSHConfig{
+			Port: 2222,
+		},
 
-	if cfg.Ansible.Playbook == "" {
-		cfg.Ansible.Playbook = "ansible/site.yml"
+		Ansible: AnsibleConfig{
+			Inventory: "ansible/inventory.ini",
+			Playbook:  "ansible/site.yml",
+		},
 	}
 }

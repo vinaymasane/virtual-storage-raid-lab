@@ -6,6 +6,7 @@ image:
   packer_template: packer/debian13.pkr.hcl
   image_name: disk_proto.qcow2
   format: qcow2
+  size_gb: 10
 
   mirror_disk: disk_mirror.raw
   mirror_format: raw

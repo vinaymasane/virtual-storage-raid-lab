@@ -2,72 +2,71 @@ package artifact
 
 import (
 	"fmt"
-	"os"
 	"path/filepath"
 
-	"virtual-storage-raid-lab/internal/common"
-)
-
-const (
-	ArtifactDir = "artifacts"
-	LogDir      = "artifacts/logs"
+	"github.com/vinaymasane/virtual-storage-raid-lab/internal/common"
+	"github.com/vinaymasane/virtual-storage-raid-lab/internal/config"
 )
 
 type Collector struct {
-	OutputDir string
+	cfg *config.Config
 }
 
-func New() *Collector {
+func New(cfg *config.Config) *Collector {
 	return &Collector{
-		OutputDir: ArtifactDir,
+		cfg: cfg,
 	}
-}
-
-func (c *Collector) Prepare() error {
-
-	dirs := []string{
-		ArtifactDir,
-		LogDir,
-	}
-
-	for _, d := range dirs {
-
-		if err := os.MkdirAll(d, 0755); err != nil {
-			return err
-		}
-	}
-
-	return nil
 }
 
 func (c *Collector) Collect() error {
 
-	if err := c.Prepare(); err != nil {
-		return err
-	}
+	artifactDir := c.cfg.Artifact.OutputDir
+	logDir := filepath.Join(artifactDir, "logs")
+	reportDir := filepath.Join(artifactDir, "reports")
+	consoleDir := filepath.Join(artifactDir, "console")
+	vmDir := filepath.Join(artifactDir, "vm")
 
 	steps := []struct {
 		src string
 		dst string
 	}{
 		{
-			"/proc/mdstat",
-			filepath.Join(ArtifactDir, "mdstat.txt"),
+			src: "/proc/mdstat",
+			dst: filepath.Join(reportDir, "mdstat.txt"),
 		},
 		{
-			"/var/log/syslog",
-			filepath.Join(LogDir, "syslog.log"),
+			src: "/proc/partitions",
+			dst: filepath.Join(reportDir, "partitions.txt"),
+		},
+		{
+			src: "/var/log/syslog",
+			dst: filepath.Join(logDir, "syslog.log"),
+		},
+		{
+			src: "/var/log/dmesg",
+			dst: filepath.Join(logDir, "dmesg.log"),
 		},
 	}
 
 	for _, s := range steps {
-
 		if err := common.CopyFile(s.src, s.dst); err != nil {
-			common.Warn(
-				fmt.Sprintf("unable to collect %s", s.src),
-			)
+			common.Warn(fmt.Sprintf("unable to collect %s: %v", s.src, err))
 		}
 	}
+
+	// Optional runtime captures. Ignore failures; these are best-effort.
+	_ = common.RunToFile(
+		filepath.Join(consoleDir, "lsblk.txt"),
+		"lsblk",
+		"-f",
+	)
+
+	_ = common.RunToFile(
+		filepath.Join(vmDir, "virsh-list.txt"),
+		"virsh",
+		"list",
+		"--all",
+	)
 
 	return nil
 }
