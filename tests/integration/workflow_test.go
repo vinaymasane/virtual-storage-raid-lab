@@ -3,7 +3,7 @@ package integration
 import (
 	"testing"
 
-	"github.com/vinamasane/virtual-storage-raid-lab/tests/common"
+	"github.com/vinaymasane/virtual-storage-raid-lab/tests/common"
 )
 
 func TestAssignmentWorkflow(t *testing.T) {

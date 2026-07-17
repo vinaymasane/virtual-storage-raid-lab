@@ -3,8 +3,8 @@ package verify
 import (
 	"fmt"
 
-	"github.com/vinamasane/virtual-storage-raid-lab/internal/common"
-	"github.com/vinamasane/virtual-storage-raid-lab/internal/config"
+	"github.com/vinaymasane/virtual-storage-raid-lab/internal/common"
+	"github.com/vinaymasane/virtual-storage-raid-lab/internal/config"
 )
 
 func VerifyArtifacts(cfg *config.Config) error {

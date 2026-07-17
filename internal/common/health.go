@@ -1,7 +1,7 @@
 package common
 
 import (
-    "github.com/ekagra-ranjan/virtual-storage-raid-lab/internal/common/config"
+    "github.com/vinaymasane/virtual-storage-raid-lab/internal/common/config"
 )
 
 

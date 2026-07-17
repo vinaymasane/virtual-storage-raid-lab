@@ -5,7 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/ekagra-ranjan/virtual-storage-raid-lab/internal/common/config"
+	"github.com/vinaymasane/virtual-storage-raid-lab/internal/common/config"
 )
 
 func Exists(path string) bool {

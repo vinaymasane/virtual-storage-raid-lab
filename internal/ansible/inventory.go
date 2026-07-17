@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/vinamasane/virtual-storage-raid-lab/internal/config"
+	"github.com/vinaymasane/virtual-storage-raid-lab/internal/config"
 )
 
 func GenerateInventory(cfg *config.Config) error {
