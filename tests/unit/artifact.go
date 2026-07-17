@@ -3,7 +3,7 @@ package unit
 import (
 	"testing"
 
-	"virtual-storage-raid-lab/tests/common"
+	"github.com/vinaymasane/virtual-storage-raid-lab/internal/common"
 )
 
 func TestArtifactDirectory(t *testing.T) {

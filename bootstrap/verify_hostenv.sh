@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
 ### Common functions for the host machine
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+export SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-COMMON_SH="${SCRIPT_DIR}/common_host.sh"
+export COMMON_SH="${SCRIPT_DIR}/common_host.sh"
 
 if [[ ! -f "${COMMON_SH}" ]]; then
     echo "ERROR: Cannot locate ${COMMON_SH}"
@@ -18,6 +18,7 @@ REQUIRED_TOOLS=(
     git
     curl
     go
+    golangci-lint
     packer
     ansible
     mdadm
@@ -36,11 +37,12 @@ done
 
 info "Required tools are installed on the host machine"
 
-info "Installed versions:"
+info "Installed Versions:"
 
 git --version
 curl --version | head -1
 go version
+golangci-lint version
 packer version
 ansible --version | head -1
 mdadm --version

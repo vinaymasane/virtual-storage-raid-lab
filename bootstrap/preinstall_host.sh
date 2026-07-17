@@ -1,20 +1,5 @@
 #!/usr/bin/env bash
 
-### Common functions for the host machine
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-
-COMMON_SH="${SCRIPT_DIR}/common_host.sh"
-
-if [[ ! -f "${COMMON_SH}" ]]; then
-    echo "ERROR: Cannot locate ${COMMON_SH}"
-    exit 1
-fi
-
-# shellcheck source=bootstrap/common_host.sh
-source "${COMMON_SH}"
-
-[[ $EUID -eq 0 ]] || die "Run using sudo."
-
 ### Function to install or upgrade APT packages
 install_or_upgrade_apt_pkg() {
 
@@ -81,34 +66,97 @@ install_or_upgrade_go() {
     tar -C /usr/local \
         -xzf /tmp/go.tar.gz
 
+    # Ensure current shell can locate it
+    GO_ROOT="/usr/local/go"
+    GO_BIN="${GO_ROOT}/bin"
+
+    if ! echo ":${PATH}:" | grep -q ":${GO_BIN}:"; then
+        export PATH="${GO_BIN}:${PATH}"
+    fi
+
+    hash -r
+
+    # Clean up
+    rm -f /tmp/go.tar.gz
+
     info "Go ${GO_VERSION} installed Successfully"
 }
 
 ### Function to install or upgrade golangci-lint
 install_or_upgrade_golangci_lint() {
 
-    info "Installing golangci-lint..."
+    local VERSION="2.12.2"
+    local INSTALL_DIR="/usr/local/bin"
+
+    local ARCH
+    ARCH="$(uname -m)"
+
+    case "${ARCH}" in
+        x86_64) ARCH="amd64" ;;
+        aarch64) ARCH="arm64" ;;
+        *) die "Unsupported architecture: ${ARCH}" ;;
+    esac
+
+    local PLATFORM="linux"
+    local FILE="golangci-lint-${VERSION}-${PLATFORM}-${ARCH}.tar.gz"
+    local URL="https://github.com/golangci/golangci-lint/releases/download/v${VERSION}/${FILE}"
 
     if binary_exists golangci-lint; then
 
-        local current
+        local CURRENT
+        CURRENT=$(golangci-lint version | sed -n 's/.*version \([^ ]*\).*/\1/p')
 
-        current=$(golangci-lint version | awk '{print $4}')
+        info "golangci-lint already installed (${CURRENT})"
 
-        info "golangci-lint already installed: (${current})"
+        if [[ "${CURRENT}" == "v${VERSION}" || "${CURRENT}" == "${VERSION}" ]]; then
+            info "golangci-lint already current (v${VERSION})"
+            return 0
+        fi
 
-        return
+        info "Upgrading golangci-lint ${CURRENT} -> v${VERSION}"
     fi
 
-    go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+    info "Downloading golangci-lint v${VERSION}..."
 
-    export PATH="$PATH:$(go env GOPATH)/bin"
+    local TMP
+    TMP=$(mktemp -d)
 
-    binary_exists golangci-lint || die "golangci-lint installation failed"
-    
-    GOLANGCI_LINT_VERSION=$(golangci-lint version | awk '{print $4}')
-    info "golangci-lint ${GOLANGCI_LINT_VERSION} installed Successfully"
+    curl -fsSL "${URL}" -o "${TMP}/${FILE}" \
+        || die "Failed downloading ${URL}"
 
+    tar -xzf "${TMP}/${FILE}" -C "${TMP}" \
+        || die "Failed extracting golangci-lint"
+
+    install -m 0755 \
+        "${TMP}/golangci-lint-${VERSION}-${PLATFORM}-${ARCH}/golangci-lint" \
+        "${INSTALL_DIR}/golangci-lint" \
+        || die "Installation failed"
+
+    rm -rf "${TMP}"
+
+    #
+    # Ensure current shell can locate it
+    #
+    if ! echo ":${PATH}:" | grep -q ":${INSTALL_DIR}:"; then
+        export PATH="${INSTALL_DIR}:${PATH}"
+    fi
+
+    hash -r
+
+    binary_exists golangci-lint || die "golangci-lint not found after installation"
+
+    info "golangci-lint location : $(command -v golangci-lint)"
+    info "golangci-lint version  : $(golangci-lint version)"
+}
+
+### Function to install Go dependencies
+install_go_dependencies() {
+
+    info "Downloading Go modules..."
+
+    go mod tidy
+
+    info "Done."
 }
 
 ### Function to install or upgrade Packer
@@ -147,36 +195,65 @@ install_or_upgrade_packer() {
         /tmp/packer.zip \
         -d /usr/local/bin
 
+    # Ensure current shell can locate it
+    if ! echo ":${PATH}:" | grep -q ":/usr/local/bin:"; then
+        export PATH="/usr/local/bin:${PATH}"
+    fi
+    hash -r
+
+    # Clean up
+    rm -f /tmp/packer.zip
+
     info "Packer ${PACKER_VERSION} installed Successfully"
 }
 
-### Function to install Go dependencies
-install_go_dependencies() {
 
-    info "Downloading Go modules..."
+### Function to generate SSH keys for testing
+generate_ssh_keys() {
 
-    go mod download
+    local KEY_DIR="tests/testdata/ssh_keys"
+    local KEY_FILE="${KEY_DIR}/id_ed25519"
 
-    go mod tidy
-}
+    mkdir -p "${KEY_DIR}"
 
-### Function to generate test SSH keys
-generate_test_ssh_keys() {
-
-    local dir="tests/testdata/ssh_keys"
-
-    mkdir -p "$dir"
-
-    if [ ! -f "$dir/id_rsa" ]; then
-        ssh-keygen -q -t ed25519 -N "" -f "$dir/id_ed25519" || die "Failed to generate SSH keys"
+    if [[ -f "${KEY_FILE}" && -f "${KEY_FILE}.pub" ]]; then
+        info "SSH key already exists"
+        return 0
     fi
+
+    info "Generating SSH key..."
+
+    ssh-keygen \
+        -q \
+        -t ed25519 \
+        -N "" \
+        -f "${KEY_FILE}"
+
+    info "SSH key created"
 }
+
+### Common functions for the host machine
+export SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+export COMMON_SH="${SCRIPT_DIR}/common_host.sh"
+
+if [[ ! -f "${COMMON_SH}" ]]; then
+    echo "ERROR: Cannot locate ${COMMON_SH}"
+    exit 1
+fi
+
+# shellcheck source=bootstrap/common_host.sh
+echo "Sourcing ${COMMON_SH}"
+source "${COMMON_SH}"
+info "Done."
+
+[[ $EUID -eq 0 ]] || die "Run using sudo."
+
 
 ### Pre-installation steps for the host machine
 info "Updating package repository"
 
 apt update -y
-apt upgrade -y
 
 info "Done."
 
@@ -259,7 +336,7 @@ for pkg in \
     "${BASE_PKGS[@]}" \
     "${VIRT_PKGS[@]}" \
     "${STORAGE_PKGS[@]}" \
-    "${CONFIG_PKGS[@]}" \
+    "${AUTOMATION_PKGS[@]}" \
     "${SUPPORT_PKGS[@]}" \
     "${GO_DEV_PKGS[@]}" \
     "${TEST_PKGS[@]}"
@@ -279,8 +356,17 @@ install_go_dependencies
 ### Install or upgrade Packer
 install_or_upgrade_packer
 
-### Generate test SSH keys
-generate_test_ssh_keys
+### Generate SSH keys for testing
+generate_ssh_keys
 
 ### Ensure that the SSH service is running
 ensure_service_running ssh
+
+export GOROOT="/usr/local/go"
+export GOPATH="${HOME}/go"
+export GOBIN="${GOPATH}/bin"
+
+export PATH="/usr/local/go/bin:/usr/local/bin:${GOBIN}:${PATH}"
+export PATH="${PATH}:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+
+hash -r

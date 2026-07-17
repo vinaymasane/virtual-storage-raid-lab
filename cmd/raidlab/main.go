@@ -93,7 +93,8 @@ func (a *Application) run() error {
 		return nil
 
 	case "bootstrap":
-		return a.bootstrap()
+		_,err := a.bootstrap()
+		return err
 
 	case "build", "image":
 		return a.image()

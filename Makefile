@@ -27,13 +27,20 @@ help:
 
 bootstrap:
 	@chmod +x bootstrap/*.sh
+	@echo "[INFO ] Running pre-installation steps for the host machine..."
+	@
 	sudo ./bootstrap/preinstall_host.sh
-	$(BIN) bootstrap
+	@echo "[INFO ] Pre-installation steps completed successfully."
+	@echo "[INFO ] Running bootstrap process..."
+	@$(BIN) -config configs/config.yaml bootstrap
+	@echo "[INFO ] Bootstrap process completed successfully."
 
 build:
+	@echo "[INFO ] Building $(PROJECT) binary..."
 	@mkdir -p bin
 	$(GO) mod tidy
 	$(GO) build -o $(BIN) ./cmd/$(PROJECT)
+	@echo "[INFO ] Build completed successfully."
 
 image: build
 	$(BIN) image
@@ -108,18 +115,23 @@ integration:
 .PHONY: fmt vet lint coverage
 
 fmt:
+	@echo "[INFO ] Running go fmt..."
 	$(GO) fmt ./...
 
 vet:
+	@echo "[INFO ] Running go vet..."
 	$(GO) vet ./...
 
 lint:
-	golangci-lint run ./...
+	@echo "[INFO ] Running golangci-lint..."
+	@golangci-lint run ./...
 
 tidy:
+	@echo "[INFO ] Running go mod tidy..."
 	$(GO) mod tidy
 
 coverage:
+	@echo "[INFO ] Running coverage tests..."
 	$(GO) test ./... -coverprofile=coverage.out
 	$(GO) tool cover -html=coverage.out -o coverage.html
 
@@ -130,6 +142,7 @@ coverage:
 .PHONY: collect
 
 collect:
+	@echo "[INFO ] Collecting artifacts..."
 	$(BIN) collect
 
 # ============================================================================

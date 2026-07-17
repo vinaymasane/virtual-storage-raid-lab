@@ -5,7 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/vinaymasane/virtual-storage-raid-lab/internal/common/config"
+	"github.com/vinaymasane/virtual-storage-raid-lab/internal/config"
 )
 
 func Exists(path string) bool {
@@ -58,20 +58,23 @@ func CopyFile(src, dst string) error {
 
 func EnsureDirectories(cfg *config.Config) error {
 
-	dirs := []string{
-		cfg.image.output_directory,
-		cfg.artifacts.output_dir,
-		filepath.Join(cfg.artifacts.output_dir, "logs"),
-		filepath.Join(cfg.artifacts.output_dir, "reports"),
-		filepath.Join(cfg.artifacts.output_dir, "console"),
-		filepath.Join(cfg.artifacts.output_dir, "vm"),
-	}
+    dirs := []string{
+        cfg.Artifact.OutputDir,
+        filepath.Join(cfg.Artifact.OutputDir, "logs"),
+        filepath.Join(cfg.Artifact.OutputDir, "reports"),
+        filepath.Join(cfg.Artifact.OutputDir, "console"),
+        filepath.Join(cfg.Artifact.OutputDir, "vm"),
+        cfg.OutputDir,
+        cfg.Coverage.OutputDir,
+    }
 
-	for _, d := range dirs {
-		if err := os.MkdirAll(d, 0755); err != nil {
-			return err
-		}
-	}
+    for _, d := range dirs {
 
-	return nil
+        if err := os.MkdirAll(d, 0755); err != nil {
+			Error("Failed to create directory " + d + ": " + err.Error())
+            return err
+        }
+    }
+
+    return nil
 }
