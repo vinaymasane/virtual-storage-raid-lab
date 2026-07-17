@@ -7,7 +7,6 @@ import (
 	"log"
 	"os"
 	"os/signal"
-	"path/filepath"
 	"runtime"
 	"syscall"
 	"time"
@@ -18,9 +17,11 @@ import (
 	"github.com/vinaymasane/virtual-storage-raid-lab/internal/config"
 	"github.com/vinaymasane/virtual-storage-raid-lab/internal/image"
 	"github.com/vinaymasane/virtual-storage-raid-lab/internal/storage"
-	"github.com/vinaymasane/virtual-storage-raid-lab/internal/vm"
 	"github.com/vinaymasane/virtual-storage-raid-lab/internal/verify"
+	"github.com/vinaymasane/virtual-storage-raid-lab/internal/vm"
 )
+
+var configPath = flag.String("config", config.DefaultConfigPath, "path to raidlab configuration file")
 
 const (
 	appName    = "raidlab"
@@ -85,34 +86,26 @@ func (a *Application) run() error {
 		return nil
 	}
 
-	cmd := flag.Arg(0)
-
-	switch cmd {
+	switch flag.Arg(0) {
 
 	case "version":
 		printVersion()
+		return nil
 
 	case "bootstrap":
-		_, err := config.Load("configs/config.yaml")
-		if err != nil {
-			log.Fatal(err)
-		}
-		return common.PreFlight()
+		return a.bootstrap()
 
-	case "build":
-		return image.BuildWithPacker()
-
-	case "image":
-		return image.BuildWithPacker()
+	case "build", "image":
+		return a.image()
 
 	case "mirror":
-		return storage.CreateMirror()
+		return a.mirror()
 
 	case "raid":
-		return storage.CreateRaid()
+		return a.raid()
 
 	case "launch":
-		return vm.LaunchVM()
+		return a.launch()
 
 	case "stop":
 		return vm.StopVM()
@@ -124,11 +117,16 @@ func (a *Application) run() error {
 		return vm.Status()
 
 	case "configure":
-		return ansible.Run()
+		return a.configure()
+
+	case "verify":
+		return a.verify()
 
 	case "collect":
-	    c := artifact.New()
-		return c.Collect()
+		return a.collect()
+
+	case "cleanup":
+		return a.cleanup()
 
 	case "test":
 		return runTests()
@@ -139,23 +137,9 @@ func (a *Application) run() error {
 	case "integration":
 		return runIntegrationTests()
 
-	case "verify":
-		cfg, err := config.Load("configs/config.yaml")
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		if err := common.PreFlight(); err != nil {
-			log.Fatal(err)
-		}
-
-		return verify.Verify(cfg)
-
 	default:
-		return fmt.Errorf("unknown command: %s", cmd)
+		return fmt.Errorf("unknown command: %s", flag.Arg(0))
 	}
-
-	return nil
 }
 
 func usage() {
@@ -163,17 +147,15 @@ func usage() {
 	fmt.Printf(`
 %s %s
 
+Virtual Storage RAID Lab
+
 Usage:
 
     raidlab <command>
 
 Commands
 
-    version
-
     bootstrap
-
-    build
 
     image
 
@@ -191,15 +173,17 @@ Commands
 
     configure
 
+    verify
+
+    collect
+
     test
 
     unit
 
     integration
 
-    verify
-
-    collect
+    version
 
 
 Examples
@@ -230,6 +214,123 @@ func printVersion() {
 	fmt.Printf("OS          : %s\n", runtime.GOOS)
 	fmt.Printf("Arch        : %s\n", runtime.GOARCH)
 	fmt.Println("-----------------------------------")
+}
+
+func (a *Application) bootstrap() (*config.Config, error) {
+
+	cfg, err := config.Load(*configPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := common.PreFlight(cfg); err != nil {
+		return nil, err
+	}
+
+	return cfg, nil
+}
+
+func (a *Application) image() error {
+
+	_, err := a.bootstrap()
+	if err != nil {
+		return err
+	}
+
+	return image.BuildWithPacker()
+}
+func (a *Application) mirror() error {
+
+	cfg, err := a.bootstrap()
+	if err != nil {
+		return err
+	}
+
+	return storage.CreateMirror(cfg)
+}
+
+func (a *Application) raid() error {
+
+	cfg, err := a.bootstrap()
+	if err != nil {
+		return err
+	}
+
+	return storage.CreateRaid(cfg)
+}
+
+func (a *Application) launch() error {
+
+	cfg, err := a.bootstrap()
+	if err != nil {
+		return err
+	}
+
+	return vm.LaunchVM(cfg)
+}
+
+func (a *Application) configure() error {
+
+	cfg, err := a.bootstrap()
+	if err != nil {
+		return err
+	}
+
+	if err := ansible.Verify(); err != nil {
+		return err
+	}
+
+	if err := ansible.GenerateInventory(cfg); err != nil {
+		return err
+	}
+
+	return ansible.Run(cfg)
+}
+
+func (a *Application) verify() error {
+
+	cfg, err := a.bootstrap()
+	if err != nil {
+		return err
+	}
+
+	return verify.Verify(cfg)
+}
+
+func (a *Application) collect() error {
+
+	cfg, err := a.bootstrap()
+	if err != nil {
+		return err
+	}
+
+	c := artifact.New(cfg)
+
+	return c.Collect()
+}
+
+func (a *Application) cleanup() error {
+
+	cfg, err := a.bootstrap()
+	if err != nil {
+		return err
+	}
+
+	if err := vm.StopVM(); err != nil {
+		log.Println("VM already stopped or unavailable:", err)
+	}
+
+	if err := storage.Cleanup(cfg); err != nil {
+		return err
+	}
+
+	if err := common.Run("./bootstrap/cleanup_host.sh"); err != nil {
+		return err
+	}
+
+	common.Info("Cleanup completed successfully")
+
+	return nil
 }
 
 func runTests() error {
@@ -278,7 +379,7 @@ func runIntegrationTests() error {
 	)
 }
 
-func verify() error {
+func verifyRepo() error {
 
 	common.Info("Running repository verification...")
 
@@ -305,24 +406,4 @@ func verify() error {
 	}
 
 	return nil
-}
-
-func init() {
-
-	required := []string{
-
-		"artifacts",
-
-		"coverage",
-
-		"output",
-	}
-
-	for _, dir := range required {
-
-		if err := os.MkdirAll(filepath.Clean(dir), 0755); err != nil {
-
-			log.Fatalf("cannot create %s : %v", dir, err)
-		}
-	}
 }

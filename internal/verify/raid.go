@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/ekagra/virtual-storage-raid-lab/internal/common"
-	"github.com/ekagra/virtual-storage-raid-lab/internal/config"
+	"github.com/vinamasane/virtual-storage-raid-lab/internal/common"
+	"github.com/vinamasane/virtual-storage-raid-lab/internal/config"
 )
 
 func VerifyRAID(cfg *config.Config) error {

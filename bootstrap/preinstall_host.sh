@@ -150,6 +150,16 @@ install_or_upgrade_packer() {
     info "Packer ${PACKER_VERSION} installed Successfully"
 }
 
+### Function to install Go dependencies
+install_go_dependencies() {
+
+    info "Downloading Go modules..."
+
+    go mod download
+
+    go mod tidy
+}
+
 ### Function to generate test SSH keys
 generate_test_ssh_keys() {
 
@@ -262,6 +272,9 @@ install_or_upgrade_go
 
 ### Install or upgrade golangci-lint
 install_or_upgrade_golangci_lint
+
+### Install Go dependencies
+install_go_dependencies
 
 ### Install or upgrade Packer
 install_or_upgrade_packer
