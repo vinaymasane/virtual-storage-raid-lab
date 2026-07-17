@@ -5,6 +5,7 @@ import (
 
 	"gopkg.in/yaml.v3"
 )
+const DefaultConfigPath = "configs/config.yaml"
 
 func Load(file string) (*Config, error) {
 

@@ -22,25 +22,24 @@ func Error(msg string) {
 
 func InitLogger(cfg *config.Config) error {
 
-	logfile := filepath.Join(
-		cfg.ArtifactDir,
-		"logs",
-		"raidlab.log",
-	)
+    logDir := filepath.Join(cfg.Artifact.OutputDir, "logs")
 
-	f, err := os.OpenFile(
-		logfile,
-		os.O_CREATE|
-			os.O_APPEND|
-			os.O_WRONLY,
-		0644,
-	)
+    if err := os.MkdirAll(logDir, 0755); err != nil {
+        return err
+    }
 
-	if err != nil {
-		return err
-	}
+    logfile := filepath.Join(logDir, "raidlab.log")
 
-	log.SetOutput(f)
+    f, err := os.OpenFile(
+        logfile,
+        os.O_CREATE|os.O_APPEND|os.O_WRONLY,
+        0644,
+    )
+    if err != nil {
+        return err
+    }
 
-	return nil
+    log.SetOutput(f)
+
+    return nil
 }
