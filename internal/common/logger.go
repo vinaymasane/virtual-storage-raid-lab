@@ -5,7 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
-    "github.com/vinaymasane/virtual-storage-raid-lab/internal/config"
+	"github.com/vinaymasane/virtual-storage-raid-lab/internal/config"
 )
 
 func Info(msg string) {
@@ -22,25 +22,25 @@ func Error(msg string) {
 
 func InitLogger(cfg *config.Config) error {
 
-    logfile := filepath.Join(
-        cfg.ArtifactDir,
-        "logs",
-        "raidlab.log",
-    )
+	logfile := filepath.Join(
+		cfg.ArtifactDir,
+		"logs",
+		"raidlab.log",
+	)
 
-    f, err := os.OpenFile(
-        logfile,
-        os.O_CREATE|
-            os.O_APPEND|
-            os.O_WRONLY,
-        0644,
-    )
+	f, err := os.OpenFile(
+		logfile,
+		os.O_CREATE|
+			os.O_APPEND|
+			os.O_WRONLY,
+		0644,
+	)
 
-    if err != nil {
-        return err
-    }
+	if err != nil {
+		return err
+	}
 
-    log.SetOutput(f)
+	log.SetOutput(f)
 
-    return nil
+	return nil
 }

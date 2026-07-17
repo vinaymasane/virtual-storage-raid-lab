@@ -8,8 +8,6 @@ import (
 	"os"
 	"os/exec"
 	"time"
-
-	"github.com/vinaymasane/virtual-storage-raid-lab/internal/common"
 )
 
 func Run(name string, args ...string) error {
@@ -29,14 +27,15 @@ func Run(name string, args ...string) error {
 	cmd.Stdout = &out
 	cmd.Stderr = &out
 
-	log.Printf("Running: %s %v", name, args)
+	Info("Running: " + name + " " + fmt.Sprintf("%v", args))
 
 	err := cmd.Run()
 
-	log.Print(out.String())
+	Info(out.String())
 
 	if err != nil {
-		return fmt.Errorf("%s failed : %w", name, err)
+		Error("Failed: " + name + " " + fmt.Sprintf("%v", args) + " : " + err.Error())
+		return err
 	}
 
 	return nil
@@ -59,14 +58,16 @@ func RunDir(dir string, name string, args ...string) error {
 	cmd.Stdout = &out
 	cmd.Stderr = &out
 
-	common.Info(fmt.Sprintf("Running: %s %v", name, args))
+	Info("Working Directory: " + dir)
+	Info("Running: " + name + " " + fmt.Sprintf("%v", args))
 
 	err := cmd.Run()
 
-	common.Info(out.String())
+	Info(out.String())
 
 	if err != nil {
-		return common.Error(fmt.Sprintf("%s failed : %v", name, err))
+		Error("Failed: " + name + " " + fmt.Sprintf("%v", args) + " :  + err.Error())")
+		return err
 	}
 
 	return nil

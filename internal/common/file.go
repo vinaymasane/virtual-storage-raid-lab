@@ -5,7 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/vinaymasane/virtual-storage-raid-lab/internal/common/config"
+	"github.com/vinaymasane/virtual-storage-raid-lab/internal/config"
 )
 
 func Exists(path string) bool {
@@ -54,7 +54,6 @@ func CopyFile(src, dst string) error {
 
 	return nil
 }
-
 
 func EnsureDirectories(cfg *config.Config) error {
 
